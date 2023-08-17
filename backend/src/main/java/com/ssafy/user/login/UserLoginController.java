@@ -2,6 +2,9 @@ package com.ssafy.user.login;
 
 import java.util.Optional;
 
+import com.ssafy.common.util.BasicResponse;
+import com.ssafy.user.login.model.KakaoUserInfo;
+import com.ssafy.user.login.service.SocialAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,10 +74,13 @@ public class UserLoginController {
 	
 	@Autowired
 	UserWithdrawalController userWithdrawalController;
+
+	@Autowired
+	SocialAuthService socialAuthService;
 	
 	/** 
 	 * id와 pw를 통해 로그인 실행, 성공 시 JWT token 반환
-	 * @param UserLoginPostReq
+	 * @param loginInfo
 	 * @return UserToken
 	 */
 	@PostMapping("/")
@@ -87,20 +93,20 @@ public class UserLoginController {
 		
 		try {
 			logger.info("## [Controller]: authorize - 로그인 실행 {}", loginInfo);
-			logger.info("#21# 암호화 비밀번호: {}", passwordEncoder.encode(loginInfo.getPassword()));
+//			logger.info("#21# 암호화 비밀번호: {}", passwordEncoder.encode(loginInfo.getPassword()));
 			
-			// # 탙뢰 회원 판별 [true = 탈퇴]
+			// # 탙퇴 회원 판별 [true = 탈퇴]
 			if (userWithdrawalController.checkWithdrawalUser(loginInfo.getId())) {
 				return ResponseEntity.ok(UserLoginPostResponse.of(401, "failure", "탈퇴회원 입니다.", null));
 			}
 			
 			// # 소셜 로그인(Kakao, Google)인 경우 비밀번호 생성
-			if (loginInfo.getPassword().equals("socialKakao")) {
-				loginInfo.setPassword(createSocialPassword(loginInfo.getId(), "KAKAO")); 
-			}
-			else if (loginInfo.getPassword().equals("socialGoogle")) {
-				loginInfo.setPassword(createSocialPassword(loginInfo.getId(), "GOOGLE"));
-			}
+//			if (loginInfo.getPassword().equals("socialKakao")) {
+//				loginInfo.setPassword(createSocialPassword(loginInfo.getId(), "KAKAO"));
+//			}
+//			else if (loginInfo.getPassword().equals("socialGoogle")) {
+//				loginInfo.setPassword(createSocialPassword(loginInfo.getId(), "GOOGLE"));
+//			}
 			
 			// # 입력값 검증
 			// i) id - 비어 있지 않은지 && ID 규칙에 맞는지
@@ -164,6 +170,36 @@ public class UserLoginController {
 			return ResponseEntity.ok(UserLoginPostResponse.of(401, "failure", "id 또는 password를 다시 입력해 주세요.", null));
 		}
 	}
+
+	/**
+	 * [OAuth] Kakao 소셜 로그인
+	 * @param authCode
+	 * @return
+	 */
+	@PostMapping("/get-kakao-auth-code")
+	public ResponseEntity<?> kakaoLogin(@RequestBody String authCode) {
+		logger.info("#OAuth# Kakao 인가 코드 확인: {}", authCode);
+
+		// 1) Kakao 인가 코드를 통해 인증토큰 발급 (getKakaoAccessToken)
+		// 2) 인증토큰을 통해 사용자의 정보 가져오기
+		KakaoUserInfo kakaoUserInfo = socialAuthService.getKakaoUserInfo(socialAuthService.getKakaoAccessToken(authCode));
+		logger.info("#OAuth# Kakao 사용자 정보 조회: {}", kakaoUserInfo);
+
+		// [검증] 회원 존재여부 확인
+		if (parameterCheck.isValidId(kakaoUserInfo.getKakao_account().getEmail())) {
+			logger.info("#OAuth# 해당 Kakao email에 해당하는 회원 없음 _회원가입 필요");
+			return ResponseEntity.ok(UserLoginPostResponse.of(401, "failure", "회원가입이 필요합니다.", null));
+		}
+
+		// 3) 로그인 진행
+		UserLoginPostRequest loginInfo = new UserLoginPostRequest();
+		loginInfo.setId(kakaoUserInfo.getKakao_account().getEmail());
+		loginInfo.setPassword(createSocialPassword(loginInfo.getId(), "KAKAO"));
+		loginInfo.setSocialButton(1);
+
+		ResponseEntity<UserLoginPostResponse> response = authorize(loginInfo);
+		return response;
+	}
 	
 	/** 
 	 * 소셜 로그인(Kakao, Google)의 경우 비밀번호 생성
@@ -177,4 +213,5 @@ public class UserLoginController {
 		
 		return id.substring(0, 6) + commonVariable.getGoogleSecret().substring(0, 6) + "#2";
 	}
+
 }

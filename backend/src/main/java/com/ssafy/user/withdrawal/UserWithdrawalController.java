@@ -86,7 +86,7 @@ public class UserWithdrawalController {
 	
 	/** 
 	 * 탈퇴 회원 여부 확인 (false = 탈퇴 X, true = 탈퇴) 
-	 * @param String
+	 * @param id
 	 * @return boolean
 	 */
 	public boolean checkWithdrawalUser(String id) {
