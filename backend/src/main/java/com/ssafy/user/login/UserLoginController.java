@@ -187,8 +187,8 @@ public class UserLoginController {
 
 		// [검증] 회원 존재여부 확인
 //		logger.info("#OAuth# 회원 존재여부: {}", parameterCheck.isValidId(kakaoUserInfo.getKakao_account().getEmail()));
-		if (parameterCheck.isValidId(kakaoUserInfo.getKakao_account().getEmail())) {
-			logger.info("#OAuth# 해당 Kakao email에 해당하는 회원 없음 _회원가입 필요");
+		if (!parameterCheck.isValidId(kakaoUserInfo.getKakao_account().getEmail())) {
+//			logger.info("#OAuth# 해당 Kakao email에 해당하는 회원 없음 _회원가입 필요");
 			return ResponseEntity.ok(UserLoginPostResponse.of(401, "need_register", "회원가입이 필요합니다.", null, kakaoUserInfo.getKakao_account().getEmail(), kakaoUserInfo.getProperties().getNickname()));
 		}
 
