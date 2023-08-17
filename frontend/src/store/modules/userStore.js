@@ -94,11 +94,7 @@ const userStore = {
                   .then(() => {
                     // 로그인 성공 alert창 출력
                     // const id = email.split("@");
-                    Swal.fire(
-                      "SSEUB",
-                      `${userName} 님 환영합니다!`,
-                      "success"
-                    );
+                    Swal.fire("SSEUB", `${userName} 님 환영합니다!`, "success");
                   });
               });
 
@@ -122,7 +118,60 @@ const userStore = {
 
       return await Promise.resolve();
     },
-    // [@Method] Kakao, Naver 소셜 로그인 성공 시 저장
+    // [@Method] 로그인 성공 이후 사용자 정보 저장
+    afterSuccessLogin({ commit }, data) {
+      // if) 로그인 성공
+      if (data.response == "success") {
+        // 로그인 성공에 따른 값(로그인 여부, 토큰 여부, 권한) 저장
+        let token = data["token"];
+        // console.log(
+        //   "#userStore - excuteLogin# 로그인 성공 - token: ",
+        //   token
+        // );
+        // token 복호화 > id(email), 권한 저장
+        let email = VueJwtDecode.decode(token).sub;
+        commit("SET_USER_ID", email);
+        commit("SET_USER_AUTH", VueJwtDecode.decode(token).auth);
+        //sessionStorage.setItem("token", token);
+        localStorage.setItem("token", token);
+        commit("SET_IS_VALID_TOKEN", true);
+        commit("SET_IS_LOGIN", true);
+
+        // 로그인 성공에 따른 메인페이지 정보 가져오기
+        // [@Method] 권한 확인 및 유저 정보 가져오기
+        // return 값 = userNickname
+        var userName = "";
+        store
+          .dispatch("userStore/checkAnyPermit", null, { root: true })
+          .then((res) => {
+            userName = res;
+
+            // [@Method] 금일 예약 건 수 가져오기
+            store
+              .dispatch("mainPageStore/excuteGetReservationCount", null, {
+                root: true,
+              })
+              .then(() => {
+                // 로그인 성공 alert창 출력
+                // const id = email.split("@");
+                Swal.fire("SSEUB", `${userName} 님 환영합니다!`, "success");
+              });
+          });
+
+        // else) 로그인 실패
+      } else {
+        // console.log("#userStore - excuteLogin# 로그인 실패");
+        commit("SET_IS_LOGIN", false);
+        commit("SET_IS_VALID_TOKEN", false);
+        commit("SET_USER_ID", null);
+        commit("SET_USER_INFO", null);
+        commit("SET_USER_AUTH", null);
+
+        // 로그인 실패 시 실패원인에 따른 alert창 출력
+        Swal.fire("로그인 실패", `${data.message}`, "error");
+      }
+    },
+    // [@Method] Kakao, Google 소셜 로그인 성공 시 저장
     excuteSocialLogin({ commit }) {
       commit("SET_IS_LOGIN", true);
       commit("SET_IS_VALID_TOKEN", true);
@@ -213,12 +262,13 @@ const userStore = {
         }
       );
     },
-    // [@Method] 회원가입 직후 로그인 성공 SET
-    setAutoLogin({ commit }, res) {
+    // [@Method] 로그인 성공 시 유저 정보 SET
+    setAutoLogin({ commit }, data) {
       // console.log("#userStore# 회원가입 직후 로그인 성공 response: ", res);
+      console.log("#userStore# setAutoLogin 실행: ", data);
 
       // 로그인 성공에 따른 값(로그인 여부, 토큰 여부, 권한) 저장
-      let token = res.data.token;
+      let token = data.token;
       // token 복호화 > id(email), 권한 저장
       let email = VueJwtDecode.decode(token).sub;
       commit("SET_USER_ID", email);
@@ -250,6 +300,18 @@ const userStore = {
         });
       // 페이지 이동
       // location.href = process.env.VUE_APP_BASE_URL;
+    },
+    // [@Method] 로그인 실패 시 유저 정보 reset
+    resetUserInfo({ commit }, data) {
+      // console.log("#userStore - excuteLogin# 로그인 실패");
+      commit("SET_IS_LOGIN", false);
+      commit("SET_IS_VALID_TOKEN", false);
+      commit("SET_USER_ID", null);
+      commit("SET_USER_INFO", null);
+      commit("SET_USER_AUTH", null);
+
+      // 로그인 실패 시 실패원인에 따른 alert창 출력
+      Swal.fire("로그인 실패", `${data.message}`, "error");
     },
     // [@Method] 메인 페이지로 이동
     moveMainPage() {

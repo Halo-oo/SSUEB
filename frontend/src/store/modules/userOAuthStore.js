@@ -1,6 +1,7 @@
 import { duplicateId } from "@/api/userJoin";
 import {
   getKakaoToken,
+  postReceiveKakaoAuthCode,
   getKakaoUserInfo,
   withdrawalKakao,
   getGoogleInfo,
@@ -62,6 +63,40 @@ const userOAuthStore = {
         }
       );
     },
+    // [@Method] Kakao 인가코드 전달
+    async receiveKakaoAuthCode(code) {
+      // console.log("#RE# Kakao 인가코드 확인: ", code);
+
+      await postReceiveKakaoAuthCode(
+        code,
+        ({ data }) => {
+          // i) 회원가입이 필요한 카카오 사용자일 경우
+          if (data.statusCode == 401 && data.response == "need_register") {
+            console.log("#OAuth# Kakao 회원가입 필요 _data: ", data);
+            const info = {
+              id: data.socialUserEmail,
+              nickname: data.socialUserNickname,
+              provider: "KAKAO",
+            };
+
+            // 소셜 로그인 유저 정보(userSocialStore) store에 id, nickname 저장
+            store.dispatch("setSocialUserInfo", info);
+          }
+          // ii) 로그인 성공
+          else if (data.statusCode == 200) {
+            console.log("#OAuth# Kakao 로그인 성공 _data: ", data);
+            store.dispatch("userStore/setAutoLogin", data, { root: true });
+          }
+          // iii) 로그인 실패
+          else {
+            store.dispatch("userStore/resetUserInfo", data, { root: true });
+          }
+        },
+        (error) => {
+          console.log("#OAuth# Kakao 로그인 에러 _error: ", error);
+        }
+      );
+    },
     // [@Method] #Google# Google 사용자 정보 가져오기 > 회원가입 OR 로그인
     async excuteGoogleInfo({ commit }, token) {
       // Google Token 저장
@@ -120,9 +155,7 @@ const userOAuthStore = {
         //   );
         // },
         (error) => {
-          console.log(
-            error
-          );
+          console.log(error);
         }
       );
     },
@@ -139,9 +172,7 @@ const userOAuthStore = {
         //   );
         // },
         (error) => {
-          console.log(
-            error
-          );
+          console.log(error);
         }
       );
     },

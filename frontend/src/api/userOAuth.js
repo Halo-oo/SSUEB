@@ -1,10 +1,13 @@
 import axios from "axios";
 import { duplicateId } from "./userJoin.js";
 import store from "@/store/index.js";
+import { apiInstance } from "./index.js";
+
+const api = apiInstance();
 
 // #Kakao API#
 // Kakao Token을 발급받기 위한 API
-const kakao_api_auth = axios.create({ 
+const kakao_api_auth = axios.create({
   baseURL: "https://kauth.kakao.com",
   headers: {
     "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
@@ -48,6 +51,20 @@ async function getKakaoToken(kakaoInfo, success, fail) {
   };
 
   await kakao_api_auth.post(`/oauth/token`, params).then(success).catch(fail);
+}
+
+// #RE# [POST] Kakao 인가 코드 전달하기
+async function postReceiveKakaoAuthCode(kakaoAuthCode, success, fail) {
+  // const data = { authCode: kakaoAuthCode };
+
+  await api
+    .post(
+      `${process.env.VUE_APP_API_BASE_URL}/user/login/get-kakao-auth-code`,
+      // JSON.stringify(data)
+      JSON.stringify(kakaoAuthCode)
+    )
+    .then(success)
+    .catch(fail);
 }
 
 // [GET] #Kakao# 현재 로그인한 Kakao 사용자 정보 가져오기
@@ -166,6 +183,7 @@ async function sendKakaoMessage(success, fail) {
 
 export {
   getKakaoToken,
+  postReceiveKakaoAuthCode,
   getKakaoUserInfo,
   withdrawalKakao,
   getGoogleInfo,
