@@ -93,12 +93,12 @@ public class UserLoginController {
 		
 		try {
 			logger.info("## [Controller]: authorize - 로그인 실행 {}", loginInfo);
-//			logger.info("#21# 암호화 비밀번호: {}", passwordEncoder.encode(loginInfo.getPassword()));
+			logger.info("#21# 암호화 비밀번호: {}", passwordEncoder.encode(loginInfo.getPassword()));
 			
 			// # 탙퇴 회원 판별 [true = 탈퇴]
-			if (userWithdrawalController.checkWithdrawalUser(loginInfo.getId())) {
-				return ResponseEntity.ok(UserLoginPostResponse.of(401, "failure", "탈퇴회원 입니다.", null));
-			}
+//			if (userWithdrawalController.checkWithdrawalUser(loginInfo.getId())) {
+//				return ResponseEntity.ok(UserLoginPostResponse.of(401, "failure", "탈퇴회원 입니다.", null));
+//			}
 			
 			// # 소셜 로그인(Kakao, Google)인 경우 비밀번호 생성
 //			if (loginInfo.getPassword().equals("socialKakao")) {
@@ -186,9 +186,10 @@ public class UserLoginController {
 		logger.info("#OAuth# Kakao 사용자 정보 조회: {}", kakaoUserInfo);
 
 		// [검증] 회원 존재여부 확인
+//		logger.info("#OAuth# 회원 존재여부: {}", parameterCheck.isValidId(kakaoUserInfo.getKakao_account().getEmail()));
 		if (parameterCheck.isValidId(kakaoUserInfo.getKakao_account().getEmail())) {
 			logger.info("#OAuth# 해당 Kakao email에 해당하는 회원 없음 _회원가입 필요");
-			return ResponseEntity.ok(UserLoginPostResponse.of(401, "failure", "회원가입이 필요합니다.", null));
+			return ResponseEntity.ok(UserLoginPostResponse.of(401, "need_register", "회원가입이 필요합니다.", null, kakaoUserInfo.getKakao_account().getEmail(), kakaoUserInfo.getProperties().getNickname()));
 		}
 
 		// 3) 로그인 진행
@@ -196,6 +197,7 @@ public class UserLoginController {
 		loginInfo.setId(kakaoUserInfo.getKakao_account().getEmail());
 		loginInfo.setPassword(createSocialPassword(loginInfo.getId(), "KAKAO"));
 		loginInfo.setSocialButton(1);
+//		logger.info("#OAuth# loginInfo 확인: {}", loginInfo);
 
 		ResponseEntity<UserLoginPostResponse> response = authorize(loginInfo);
 		return response;
