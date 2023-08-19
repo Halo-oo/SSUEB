@@ -25,7 +25,14 @@ public class UserLoginPostResponse extends BaseResponseBody{
 	String token;
 	
 	@ApiModelProperty(name = "성공/실패 여부", example = "success / failure")
-	String response; 
+	String response;
+
+	@ApiModelProperty(name = "소셜 로그인 유저 email", example = "ssafy@naver.com")
+	String socialUserEmail = null;
+
+	@ApiModelProperty(name = "소셜 로그인 유저 nickname", example = "싸피")
+	String socialUserNickname = null;
+
 	
 	public static UserLoginPostResponse of(Integer statusCode, String response, String message, String token) {
 		UserLoginPostResponse res = new UserLoginPostResponse();
@@ -35,6 +42,19 @@ public class UserLoginPostResponse extends BaseResponseBody{
 		res.setMessage(message);
 		res.setToken(token);
 		
+		return res;
+	}
+
+	public static UserLoginPostResponse of(Integer statusCode, String response, String message, String token, String socialUserEmail, String socialUserNickname) {
+		UserLoginPostResponse res = new UserLoginPostResponse();
+
+		res.setStatusCode(statusCode);
+		res.setResponse(response);
+		res.setMessage(message);
+		res.setToken(token);
+		res.setSocialUserEmail(socialUserEmail);
+		res.setSocialUserNickname(socialUserNickname);
+
 		return res;
 	}
 }

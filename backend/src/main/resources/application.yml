@@ -10,6 +10,12 @@ kakao:
 # for. Google
 google:
   secret: GOC9kPsZBlP119
+# file
+file:
+  path: /localhost/files
+  image:
+    path:
+      board: /localhost/files/image/board
 logging:
   file:
     name: ./ssafy-web.log

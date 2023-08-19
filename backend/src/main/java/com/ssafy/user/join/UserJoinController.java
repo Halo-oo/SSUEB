@@ -81,7 +81,7 @@ public class UserJoinController {
 		
 		// Partner 회원가입
 		boolean result = userJoinService.joinPartner(joinRequest);
-		logger.info("#21# 회원가입 result 확인: ", result);
+//		logger.info("#21# 회원가입 result 확인: ", result);
 		if (result) {
 			
 			// 로그인하기

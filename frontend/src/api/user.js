@@ -16,7 +16,7 @@ async function login(loginInfo, success, fail) {
 
 // [GET] 모든 권한 허용 + header에 token 넣어야 함
 async function anyPermit(token, success, fail) {
-  console.log("#user - anyPermit# 모든 권한 허용 params - token: ", token);
+  // console.log("#user - anyPermit# 모든 권한 허용 params - token: ", token);
   await api
     .get(`${process.env.VUE_APP_API_BASE_URL}/user/auth/permit`, {
       headers: {
