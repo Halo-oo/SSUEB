@@ -133,7 +133,7 @@ export default {
     //   await this.excuteKakaoToken(this.kakaoCode);
     //   this.kakaoCode = null; // 받은 인가 code 초기화
     // },
-    // #RE# Kakao 인가 코드 전달
+    // #OAuth# Kakao 인가 코드 전달
     async kakao() {
       await this.receiveKakaoAuthCode(this.kakaoCode);
       this.kakaoCode = null; // 받은 인가 code 초기화

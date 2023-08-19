@@ -108,21 +108,22 @@ public class UserLoginController {
 //				loginInfo.setPassword(createSocialPassword(loginInfo.getId(), "GOOGLE"));
 //			}
 			
-			// # 입력값 검증
-			// i) id - 비어 있지 않은지 && ID 규칙에 맞는지
-			if(parameterCheck.isEmpty(loginInfo.getId()) || !parameterCheck.isValidId(loginInfo.getId())) {
-				return ResponseEntity.ok(UserLoginPostResponse.of(401, "failure", "id 또는 password를 다시 입력해 주세요.", null));
-			}
-			// ii) pw - 비어 있지 않은지 && PW 규칙에 맞는지 
-			if (parameterCheck.isEmpty(loginInfo.getPassword()) || !parameterCheck.isValidPassword(loginInfo.getPassword())) {
-				return ResponseEntity.ok(UserLoginPostResponse.of(401, "failure", "id 또는 password를 다시 입력해 주세요.", null));
-			}
-			
-			// # 소셜 로그인 ID 여부 검증
-			Optional<User> user = joinUserRepository.findById(loginInfo.getId());
-			if (user.get().getUserIsSocialId() == 1 && loginInfo.getSocialButton()==0) {
-				return ResponseEntity.ok(UserLoginPostResponse.of(401, "failure", "소셜 로그인을 이용해 주세요.", null));
-			}
+//			// # 입력값 검증
+//			// i) id - 비어 있지 않은지 && ID 규칙에 맞는지
+//			if(parameterCheck.isEmpty(loginInfo.getId()) || !parameterCheck.isValidId(loginInfo.getId())) {
+//				return ResponseEntity.ok(UserLoginPostResponse.of(401, "failure", "id 또는 password를 다시 입력해 주세요.", null));
+//			}
+//			// ii) pw - 비어 있지 않은지 && PW 규칙에 맞는지
+//			if (parameterCheck.isEmpty(loginInfo.getPassword()) || !parameterCheck.isValidPassword(loginInfo.getPassword())) {
+//				return ResponseEntity.ok(UserLoginPostResponse.of(401, "failure", "id 또는 password를 다시 입력해 주세요.", null));
+//			}
+//
+//			// # 소셜 로그인 ID 여부 검증
+//			Optional<User> user = joinUserRepository.findById(loginInfo.getId());
+//			if (user.get().getUserIsSocialId() == 1 && loginInfo.getSocialButton()==0) {
+//				return ResponseEntity.ok(UserLoginPostResponse.of(401, "failure", "소셜 로그인을 이용해 주세요.", null));
+//			}
+//			logger.info("## [Controller]: authorize - 검증 성공");
 			
 			// # 로그인
 			// i) 입력받은 loginInfo(id, pw)를 사용하여 Authentication(인증) 토큰 생성
@@ -178,7 +179,7 @@ public class UserLoginController {
 	 */
 	@PostMapping("/get-kakao-auth-code")
 	public ResponseEntity<?> kakaoLogin(@RequestBody String authCode) {
-		logger.info("#OAuth# Kakao 인가 코드 확인: {}", authCode);
+//		logger.info("#OAuth# Kakao 인가 코드 확인: {}", authCode);
 
 		// 1) Kakao 인가 코드를 통해 인증토큰 발급 (getKakaoAccessToken)
 		// 2) 인증토큰을 통해 사용자의 정보 가져오기

@@ -50,10 +50,10 @@ const userOAuthStore = {
       await getKakaoToken(
         kakaoInfo,
         ({ data }) => {
-          // console.log(
-          //   "#userOAuthStore - getKakaoToken# Kakao Token 발급 성공: ",
-          //   data
-          // );
+          console.log(
+            "#userOAuthStore - getKakaoToken# Kakao Token 발급 성공: ",
+            data
+          );
           // 발급받은 access-token을 통해 현재 로그인한 사용자 정보 가져오기
           localStorage.setItem("kakaoToken", data.access_token);
           commit("SET_KAKAO_TOKEN", data.access_token);
@@ -64,8 +64,9 @@ const userOAuthStore = {
       );
     },
     // [@Method] Kakao 인가코드 전달
-    async receiveKakaoAuthCode(code) {
-      // console.log("#RE# Kakao 인가코드 확인: ", code);
+    async receiveKakaoAuthCode({ commit }, code) {
+      commit;
+      // console.log("#OAuth# Kakao 인가코드 확인: ", code);
 
       await postReceiveKakaoAuthCode(
         code,

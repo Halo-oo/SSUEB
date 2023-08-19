@@ -31,7 +31,6 @@ public class SocialAuthService {
      * @param code Kakao Auth Code
      * **/
     public String getKakaoAccessToken(String code) {
-        KakaoAccessToken kakaoAccessToken = new KakaoAccessToken();
 
         RestTemplate restTemplate = new RestTemplate();     // RestTemplate 사용
 
