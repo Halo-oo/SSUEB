@@ -5,6 +5,7 @@ import {
   getKakaoUserInfo,
   withdrawalKakao,
   getGoogleInfo,
+  executeGoogleLogin,
   withdrawalGoogle,
   sendKakaoMessage,
 } from "@/api/userOAuth";
@@ -95,6 +96,41 @@ const userOAuthStore = {
         },
         (error) => {
           console.log("#OAuth# Kakao 로그인 에러 _error: ", error);
+        }
+      );
+    },
+    // [@Method] Google 로그인 진행
+    async googleLogin({ commit }, token) {
+      commit;
+      console.log("#OAuth# Google 로그인 진행 access_token 확인: ", token);
+
+      await executeGoogleLogin(
+        token,
+        ({ data }) => {
+          // i) 회원가입이 필요한 구글 사용자일 경우
+          if (data.statusCode == 401 && data.response == "need_register") {
+            console.log("#OAuth# Google 회원가입 필요 _data: ", data);
+            const info = {
+              id: data.socialUserEmail,
+              nickname: "",
+              provider: "GOOGLE",
+            };
+
+            // 소셜 로그인 유저 정보(userSocialStore) store에 id, nickname 저장
+            store.dispatch("setSocialUserInfo", info);
+          }
+          // ii) 로그인 성공
+          else if (data.statusCode == 200) {
+            console.log("#OAuth# Google 로그인 성공 _data: ", data);
+            store.dispatch("userStore/setAutoLogin", data, { root: true });
+          }
+          // iii) 로그인 실패
+          else {
+            store.dispatch("userStore/resetUserInfo", data, { root: true });
+          }
+        },
+        (error) => {
+          console.log("#OAuth# Google 로그인 에러 _error: ", error);
         }
       );
     },

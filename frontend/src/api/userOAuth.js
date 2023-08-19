@@ -53,7 +53,7 @@ async function getKakaoToken(kakaoInfo, success, fail) {
   await kakao_api_auth.post(`/oauth/token`, params).then(success).catch(fail);
 }
 
-// #RE# [POST] Kakao 인가 코드 전달하기
+// #OAuth# [POST] Kakao 인가 코드 전달하기
 async function postReceiveKakaoAuthCode(kakaoAuthCode, success, fail) {
   // const data = { authCode: kakaoAuthCode };
 
@@ -117,6 +117,17 @@ async function getKakaoUserInfo(token, success, fail) {
 async function withdrawalKakao(success, fail) {
   // x-www-form-urlencoded 형식으로 파라미터 보내기
   await kakao_api_disconnect.post(`v1/user/unlink`).then(success).catch(fail);
+}
+
+// #OAuth# [POST] Google 로그인 진행
+async function executeGoogleLogin(googleAccessToken, success, fail) {
+  await api
+    .post(
+      `${process.env.VUE_APP_API_BASE_URL}/user/login/execute-google-login`,
+      JSON.stringify(googleAccessToken)
+    )
+    .then(success)
+    .catch(fail);
 }
 
 // [GET] #Google# 사용자 정보 요청받기
@@ -186,6 +197,7 @@ export {
   postReceiveKakaoAuthCode,
   getKakaoUserInfo,
   withdrawalKakao,
+  executeGoogleLogin,
   getGoogleInfo,
   withdrawalGoogle,
   sendKakaoMessage,

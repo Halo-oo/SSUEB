@@ -3,6 +3,7 @@ package com.ssafy.user.login;
 import java.util.Optional;
 
 import com.ssafy.common.util.BasicResponse;
+import com.ssafy.user.login.model.GoogleUserInfo;
 import com.ssafy.user.login.model.KakaoUserInfo;
 import com.ssafy.user.login.service.SocialAuthService;
 import org.slf4j.Logger;
@@ -199,6 +200,37 @@ public class UserLoginController {
 		loginInfo.setPassword(createSocialPassword(loginInfo.getId(), "KAKAO"));
 		loginInfo.setSocialButton(1);
 //		logger.info("#OAuth# loginInfo 확인: {}", loginInfo);
+
+		ResponseEntity<UserLoginPostResponse> response = authorize(loginInfo);
+		return response;
+	}
+
+	/**
+	 * [OAuth] Google 소셜 로그인
+	 * @param accessToken
+	 * @return
+	 */
+	@PostMapping("/execute-google-login")
+	public ResponseEntity<?> googleLogin(@RequestBody String accessToken) {
+		logger.info("#OAuth# Google 인증 토큰 확인: {}", accessToken);
+
+		// 1) Google 인증 토큰을 통해 사용자 정보 가져오기
+		GoogleUserInfo googleUserInfo = socialAuthService.getGoogleUserInfo(accessToken);
+		logger.info("#OAuth# Google 사용자 정보 조회: {}", googleUserInfo);
+
+		// [검증] 회원 존재여부 확인
+//		logger.info("#OAuth# 회원 존재여부: {}", joinUserRepository.findById(googleUserInfo.getEmail()));
+		if (joinUserRepository.findById(googleUserInfo.getEmail()).isEmpty()) {
+			logger.info("#OAuth# 해당 Google email에 해당하는 회원 없음 _회원가입 필요");
+			return ResponseEntity.ok(UserLoginPostResponse.of(401, "need_register", "회원가입이 필요합니다.", null, googleUserInfo.getEmail(), ""));
+		}
+
+		// 3) 로그인 진행
+		UserLoginPostRequest loginInfo = new UserLoginPostRequest();
+		loginInfo.setId(googleUserInfo.getEmail());
+		loginInfo.setPassword(createSocialPassword(loginInfo.getId(), "GOOGLE"));
+		loginInfo.setSocialButton(1);
+		logger.info("#OAuth# loginInfo 확인: {}", loginInfo);
 
 		ResponseEntity<UserLoginPostResponse> response = authorize(loginInfo);
 		return response;

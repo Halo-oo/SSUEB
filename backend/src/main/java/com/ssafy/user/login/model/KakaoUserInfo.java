@@ -3,7 +3,7 @@ package com.ssafy.user.login.model;
 import lombok.Data;
 
 /**
- * 소셜 로그인 시 로그인 한 유저의 정보 DTO
+ * Kakao 소셜 로그인 시 로그인 한 유저의 정보 DTO
  */
 @Data
 public class KakaoUserInfo {
