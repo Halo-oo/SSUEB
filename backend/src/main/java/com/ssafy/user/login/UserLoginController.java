@@ -122,22 +122,23 @@ public class UserLoginController {
 			// i) 입력받은 loginInfo(id, pw)를 사용하여 Authentication(인증) 토큰 생성
 			UsernamePasswordAuthenticationToken authenticationToken = 
 					new UsernamePasswordAuthenticationToken(loginInfo.getId(), loginInfo.getPassword());
-			logger.info("#21# i) 토큰생성: {}", authenticationToken); 
+//			logger.info("#21# i) 토큰생성: {}", authenticationToken);
 
 			
 			// ii) i에서 만든 authenticationToken을 사용하여 Authentication 객체를 생성하기 위하여 authenticate 메소드가 실행될 때
 			//     CustomUserDetailsService 에 loadUserByUsername 메소드가 실행됨
 			Authentication authentication = 
 					authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-			logger.info("#21# ii) authentication 객체 생성: {}", authentication);
+//			logger.info("#21# ii) authentication 객체 생성: {}", authentication);
 			
 			// ii-1) 전문가 권한인 경우 자격증 검증 값 확인
 			Optional<? extends GrantedAuthority> authority =  authentication.getAuthorities().stream().findFirst();
 			String authorityStr = authority.get().getAuthority();
+
 //			logger.info("#21# ii-1) 전문가 자격증 검증: {}", authorityStr);
 			if (authorityStr.equals("ROLE_CONSULTANT")) {
 				// 전문가 자격증 검증 컬럼 확인
-				logger.info("#21# id에 해당되는 전문가 정보: {}", userLoginService.getConsultantById(loginInfo.getId()));
+//				logger.info("#21# id에 해당되는 전문가 정보: {}", userLoginService.getConsultantById(loginInfo.getId()));
 				Consultant consultant = userLoginService.getConsultantById(loginInfo.getId());
 				if (consultant.getConsultantCertified() == 0) {
 					return ResponseEntity.ok(UserLoginPostResponse.of(401, "unverified", "자격증 미검증 상태입니다.", null));
@@ -177,12 +178,12 @@ public class UserLoginController {
 		// 1) Kakao 인가 코드를 통해 인증토큰 발급 (getKakaoAccessToken)
 		// 2) 인증토큰을 통해 사용자의 정보 가져오기
 		KakaoUserInfo kakaoUserInfo = socialAuthService.getKakaoUserInfo(socialAuthService.getKakaoAccessToken(authCode));
-		logger.info("#OAuth# Kakao 사용자 정보 조회: {}", kakaoUserInfo);
+//		logger.info("#OAuth# Kakao 사용자 정보 조회: {}", kakaoUserInfo);
 
 		// [검증] 회원 존재여부 확인
-		logger.info("#OAuth# 회원 존재여부: {}", joinUserRepository.findById(kakaoUserInfo.getKakao_account().getEmail()));
+//		logger.info("#OAuth# 회원 존재여부: {}", joinUserRepository.findById(kakaoUserInfo.getKakao_account().getEmail()));
 		if (joinUserRepository.findById(kakaoUserInfo.getKakao_account().getEmail()).isEmpty()) {
-			logger.info("#OAuth# 해당 Kakao email에 해당하는 회원 없음 _회원가입 필요");
+//			logger.info("#OAuth# 해당 Kakao email에 해당하는 회원 없음 _회원가입 필요");
 			return ResponseEntity.ok(UserLoginPostResponse.of(401, "need_register", "회원가입이 필요합니다.", null, kakaoUserInfo.getKakao_account().getEmail(), kakaoUserInfo.getProperties().getNickname()));
 		}
 
@@ -213,7 +214,7 @@ public class UserLoginController {
 		// [검증] 회원 존재여부 확인
 //		logger.info("#OAuth# 회원 존재여부: {}", joinUserRepository.findById(googleUserInfo.getEmail()));
 		if (joinUserRepository.findById(googleUserInfo.getEmail()).isEmpty()) {
-			logger.info("#OAuth# 해당 Google email에 해당하는 회원 없음 _회원가입 필요");
+//			logger.info("#OAuth# 해당 Google email에 해당하는 회원 없음 _회원가입 필요");
 			return ResponseEntity.ok(UserLoginPostResponse.of(401, "need_register", "회원가입이 필요합니다.", null, googleUserInfo.getEmail(), ""));
 		}
 
@@ -222,7 +223,7 @@ public class UserLoginController {
 		loginInfo.setId(googleUserInfo.getEmail());
 		loginInfo.setPassword(createSocialPassword(loginInfo.getId(), "GOOGLE"));
 		loginInfo.setSocialButton(1);
-		logger.info("#OAuth# loginInfo 확인: {}", loginInfo);
+//		logger.info("#OAuth# loginInfo 확인: {}", loginInfo);
 
 		ResponseEntity<UserLoginPostResponse> response = authorize(loginInfo);
 		return response;

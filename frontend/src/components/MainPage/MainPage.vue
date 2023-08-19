@@ -123,27 +123,12 @@ export default {
     ...mapState(userStore, ["userAuth"]),
   },
   methods: {
-    ...mapActions(userOAuthStore, [
-      "excuteKakaoToken",
-      "receiveKakaoAuthCode",
-      "excuteGoogleInfo",
-      "googleLogin",
-    ]),
-    // #OAuth - Kakao# 받은 인가 코드를 사용하여 Kakao Token 발급요청
-    // async kakao() {
-    //   await this.excuteKakaoToken(this.kakaoCode);
-    //   this.kakaoCode = null; // 받은 인가 code 초기화
-    // },
+    ...mapActions(userOAuthStore, ["receiveKakaoAuthCode", "googleLogin"]),
     // #OAuth# Kakao 인가 코드 전달
     async kakao() {
       await this.receiveKakaoAuthCode(this.kakaoCode);
       this.kakaoCode = null; // 받은 인가 code 초기화
     },
-    // #OAuth - Google# 받은 access_token을 사용하여 사용자 정보 요청
-    // async google() {
-    //   await this.excuteGoogleInfo(this.googleToken);
-    //   this.googleToken = null; // 받은 access_token 초기화
-    // },
     // #OAuth# Google 로그인 진행
     async google() {
       await this.googleLogin(this.googleToken);

@@ -49,12 +49,10 @@ public class SocialAuthService {
         params.add("code", code);
 
         HttpEntity<MultiValueMap<String, String>> kakaoTokenReq = new HttpEntity<>(params, headers);
-//        ResponseEntity<JSONObject> response = restTemplate.exchange(KAKAO_REQ_TOKEN_URL, HttpMethod.POST, kakaoTokenReq, JSONObject.class);
-//        JSONObject responseBody = response.getBody();
 
         // 인증 토큰 요청 및 응답 처리
         ResponseEntity<KakaoAccessToken> response = restTemplate.exchange(KAKAO_REQ_TOKEN_URL, HttpMethod.POST, kakaoTokenReq, KakaoAccessToken.class);
-        logger.info("#OAuth# Kakao 인증토큰 확인: {}", response.getBody().getAccess_token());
+//        logger.info("#OAuth# Kakao 인증토큰 확인: {}", response.getBody().getAccess_token());
 
         return response.getBody().getAccess_token();
     }
@@ -74,8 +72,6 @@ public class SocialAuthService {
 
         // HttpHeader와 HttpBody 담기
         HttpEntity<MultiValueMap<String, String>> kakaoUserInfoReq = new HttpEntity<>(headers);
-//        kakaoUserInfo = restTemplate.exchange(KAKAO_REQ_USER_INFO_URL, HttpMethod.GET, kakaoUserInfoReq, KakaoUserInfo.class).getBody();
-//        logger.info("#OAuth# _카카오 유저정보 조회: {}", kakaoUserInfo);
 
         return restTemplate.exchange(KAKAO_REQ_USER_INFO_URL, HttpMethod.GET, kakaoUserInfoReq, KakaoUserInfo.class).getBody();
     }

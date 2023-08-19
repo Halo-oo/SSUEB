@@ -1,10 +1,6 @@
-import { duplicateId } from "@/api/userJoin";
 import {
-  getKakaoToken,
   postReceiveKakaoAuthCode,
-  getKakaoUserInfo,
   withdrawalKakao,
-  getGoogleInfo,
   executeGoogleLogin,
   withdrawalGoogle,
   sendKakaoMessage,
@@ -29,8 +25,6 @@ const userOAuthStore = {
     // #Kakao# 발급받은 Kakao Token 저장
     SET_KAKAO_TOKEN: (state, kakaoToken) => {
       state.kakaoToken = kakaoToken;
-      // #Kakao# 현재 로그인한 Kakao 사용자 정보 가져오기
-      getKakaoUserInfo(kakaoToken);
     },
     // #Google# 발급받은 Google Token 저장
     SET_GOOGLE_TOKEN: (state, googleToken) => {
@@ -38,32 +32,6 @@ const userOAuthStore = {
     },
   },
   actions: {
-    // [@Method] #Kakao# Kakao Token 발급받기 (Kakao 인가 코드 사용)
-    async excuteKakaoToken({ commit }, code) {
-      const kakaoInfo = {
-        grant_type: "authorization_code",
-        client_id: process.env.VUE_APP_OAUTH_KAKAO_CLIENT,
-        redirect_uri: process.env.VUE_APP_OAUTH_REDIRECT_URI,
-        code: code,
-        client_secret: process.env.VUE_APP_OAUTH_KAKAO_CLIENT_SECRET,
-      };
-
-      await getKakaoToken(
-        kakaoInfo,
-        ({ data }) => {
-          console.log(
-            "#userOAuthStore - getKakaoToken# Kakao Token 발급 성공: ",
-            data
-          );
-          // 발급받은 access-token을 통해 현재 로그인한 사용자 정보 가져오기
-          localStorage.setItem("kakaoToken", data.access_token);
-          commit("SET_KAKAO_TOKEN", data.access_token);
-        },
-        (error) => {
-          console.log(error);
-        }
-      );
-    },
     // [@Method] Kakao 인가코드 전달
     async receiveKakaoAuthCode({ commit }, code) {
       commit;
@@ -74,7 +42,7 @@ const userOAuthStore = {
         ({ data }) => {
           // i) 회원가입이 필요한 카카오 사용자일 경우
           if (data.statusCode == 401 && data.response == "need_register") {
-            console.log("#OAuth# Kakao 회원가입 필요 _data: ", data);
+            // console.log("#OAuth# Kakao 회원가입 필요 _data: ", data);
             const info = {
               id: data.socialUserEmail,
               nickname: data.socialUserNickname,
@@ -86,7 +54,7 @@ const userOAuthStore = {
           }
           // ii) 로그인 성공
           else if (data.statusCode == 200) {
-            console.log("#OAuth# Kakao 로그인 성공 _data: ", data);
+            // console.log("#OAuth# Kakao 로그인 성공 _data: ", data);
             store.dispatch("userStore/setAutoLogin", data, { root: true });
           }
           // iii) 로그인 실패
@@ -102,14 +70,14 @@ const userOAuthStore = {
     // [@Method] Google 로그인 진행
     async googleLogin({ commit }, token) {
       commit;
-      console.log("#OAuth# Google 로그인 진행 access_token 확인: ", token);
+      // console.log("#OAuth# Google 로그인 진행 access_token 확인: ", token);
 
       await executeGoogleLogin(
         token,
         ({ data }) => {
           // i) 회원가입이 필요한 구글 사용자일 경우
           if (data.statusCode == 401 && data.response == "need_register") {
-            console.log("#OAuth# Google 회원가입 필요 _data: ", data);
+            // console.log("#OAuth# Google 회원가입 필요 _data: ", data);
             const info = {
               id: data.socialUserEmail,
               nickname: "",
@@ -121,7 +89,7 @@ const userOAuthStore = {
           }
           // ii) 로그인 성공
           else if (data.statusCode == 200) {
-            console.log("#OAuth# Google 로그인 성공 _data: ", data);
+            // console.log("#OAuth# Google 로그인 성공 _data: ", data);
             store.dispatch("userStore/setAutoLogin", data, { root: true });
           }
           // iii) 로그인 실패
@@ -131,47 +99,6 @@ const userOAuthStore = {
         },
         (error) => {
           console.log("#OAuth# Google 로그인 에러 _error: ", error);
-        }
-      );
-    },
-    // [@Method] #Google# Google 사용자 정보 가져오기 > 회원가입 OR 로그인
-    async excuteGoogleInfo({ commit }, token) {
-      // Google Token 저장
-      localStorage.setItem("googleToken", token);
-      commit("SET_GOOGLE_TOKEN", token);
-
-      await getGoogleInfo(
-        token,
-        async ({ data }) => {
-          // console.log("#21# Google 사용자 정보: ", data);
-          // console.log("#21# Google 사용자 email: ", data.email);
-          const info = {
-            id: data.email,
-            nickname: "",
-            provider: "GOOGLE",
-          };
-
-          var duplicateResult = false; // 현재 로그인한 사용자 중복 확인 (회원가입 여부 학인)
-          await duplicateId(info.id).then((res) => {
-            duplicateResult = res;
-          });
-          // * 만약 이 아이디로 회원가입 한 사용자가 없다면 > 회원가입 페이지로 이동
-          if (duplicateResult == true) {
-            store.dispatch("setSocialUserInfo", info); // userSocialStore에 id(email) 저장
-          }
-          // * 있다면 > 로그인
-          else {
-            // 로그인 JWT 토큰 발행 > (userStore 내 로그인 함수 호출)
-            const loginInfo = {
-              id: info.id,
-              password: `${process.env.VUE_APP_OAUTH_GOOGLE}`,
-              socialButton: 1,
-            };
-            store.dispatch("userStore/excuteLogin", loginInfo, { root: true });
-          }
-        },
-        (error) => {
-          console.log(error);
         }
       );
     },
