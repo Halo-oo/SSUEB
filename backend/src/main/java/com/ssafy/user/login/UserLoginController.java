@@ -94,36 +94,28 @@ public class UserLoginController {
 		
 		try {
 			logger.info("## [Controller]: authorize - 로그인 실행 {}", loginInfo);
-			logger.info("#21# 암호화 비밀번호: {}", passwordEncoder.encode(loginInfo.getPassword()));
-			
-			// # 탙퇴 회원 판별 [true = 탈퇴]
-//			if (userWithdrawalController.checkWithdrawalUser(loginInfo.getId())) {
-//				return ResponseEntity.ok(UserLoginPostResponse.of(401, "failure", "탈퇴회원 입니다.", null));
-//			}
-			
-			// # 소셜 로그인(Kakao, Google)인 경우 비밀번호 생성
-//			if (loginInfo.getPassword().equals("socialKakao")) {
-//				loginInfo.setPassword(createSocialPassword(loginInfo.getId(), "KAKAO"));
-//			}
-//			else if (loginInfo.getPassword().equals("socialGoogle")) {
-//				loginInfo.setPassword(createSocialPassword(loginInfo.getId(), "GOOGLE"));
-//			}
-			
-//			// # 입력값 검증
-//			// i) id - 비어 있지 않은지 && ID 규칙에 맞는지
-//			if(parameterCheck.isEmpty(loginInfo.getId()) || !parameterCheck.isValidId(loginInfo.getId())) {
-//				return ResponseEntity.ok(UserLoginPostResponse.of(401, "failure", "id 또는 password를 다시 입력해 주세요.", null));
-//			}
-//			// ii) pw - 비어 있지 않은지 && PW 규칙에 맞는지
-//			if (parameterCheck.isEmpty(loginInfo.getPassword()) || !parameterCheck.isValidPassword(loginInfo.getPassword())) {
-//				return ResponseEntity.ok(UserLoginPostResponse.of(401, "failure", "id 또는 password를 다시 입력해 주세요.", null));
-//			}
-//
-//			// # 소셜 로그인 ID 여부 검증
-//			Optional<User> user = joinUserRepository.findById(loginInfo.getId());
-//			if (user.get().getUserIsSocialId() == 1 && loginInfo.getSocialButton()==0) {
-//				return ResponseEntity.ok(UserLoginPostResponse.of(401, "failure", "소셜 로그인을 이용해 주세요.", null));
-//			}
+//			logger.info("#21# 암호화 비밀번호: {}", passwordEncoder.encode(loginInfo.getPassword()));
+
+			// [검증]
+			// # 입력값 검증
+			// i) id - 비어 있지 않은지 && ID 규칙에 맞는지
+			if(parameterCheck.isEmpty(loginInfo.getId()) || !parameterCheck.isValidId(loginInfo.getId())) {
+				return ResponseEntity.ok(UserLoginPostResponse.of(401, "failure", "id 또는 password를 다시 입력해 주세요.", null));
+			}
+			// ii) pw - 비어 있지 않은지 && PW 규칙에 맞는지
+			if (parameterCheck.isEmpty(loginInfo.getPassword()) || !parameterCheck.isValidPassword(loginInfo.getPassword())) {
+				return ResponseEntity.ok(UserLoginPostResponse.of(401, "failure", "id 또는 password를 다시 입력해 주세요.", null));
+			}
+
+			// # 소셜 로그인 ID 여부 검증
+			Optional<User> user = joinUserRepository.findById(loginInfo.getId());
+			if (user.get().getUserIsSocialId() == 1 && loginInfo.getSocialButton()==0) {
+				return ResponseEntity.ok(UserLoginPostResponse.of(401, "failure", "소셜 로그인을 이용해 주세요.", null));
+			}
+			// # 탙퇴 회원 판별
+			if (user.get().getUserActivated() == 1) {
+				return ResponseEntity.ok(UserLoginPostResponse.of(401, "failure", "탈퇴회원 입니다.", null));
+			}
 //			logger.info("## [Controller]: authorize - 검증 성공");
 			
 			// # 로그인
@@ -188,9 +180,9 @@ public class UserLoginController {
 		logger.info("#OAuth# Kakao 사용자 정보 조회: {}", kakaoUserInfo);
 
 		// [검증] 회원 존재여부 확인
-//		logger.info("#OAuth# 회원 존재여부: {}", parameterCheck.isValidId(kakaoUserInfo.getKakao_account().getEmail()));
-		if (!parameterCheck.isValidId(kakaoUserInfo.getKakao_account().getEmail())) {
-//			logger.info("#OAuth# 해당 Kakao email에 해당하는 회원 없음 _회원가입 필요");
+		logger.info("#OAuth# 회원 존재여부: {}", joinUserRepository.findById(kakaoUserInfo.getKakao_account().getEmail()));
+		if (joinUserRepository.findById(kakaoUserInfo.getKakao_account().getEmail()).isEmpty()) {
+			logger.info("#OAuth# 해당 Kakao email에 해당하는 회원 없음 _회원가입 필요");
 			return ResponseEntity.ok(UserLoginPostResponse.of(401, "need_register", "회원가입이 필요합니다.", null, kakaoUserInfo.getKakao_account().getEmail(), kakaoUserInfo.getProperties().getNickname()));
 		}
 
